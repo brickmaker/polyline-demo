@@ -19,19 +19,22 @@ const segments = [
     [1, 1]
 ]
 
-const arc = createArc(0, 0, 2, Math.PI/ 4, Math.PI / 2)
+const arc = createArc(0, 0, 2, Math.PI / 4, Math.PI / 2)
 
-// const path = segments
-const path = arc
+const getGeometry = (path) => {
+    const width = 0.05
+    const { positions, indices } = getData(path, width)
+    // attribute buffers, wrapped in a BufferGeometry
+    const geometry = new THREE.BufferGeometry();
+    geometry.setIndex(indices)
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 2))
+    return geometry
+}
 
-const width = 0.05
-const { positions, indices } = getData(path, width)
 
-// attribute buffers, wrapped in a BufferGeometry
-let geometry = new THREE.BufferGeometry();
-geometry.setIndex(indices)
-geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 2))
-// geometry = THREE.BufferGeometryUtils.toTrianglesDrawMode(geometry, THREE.TriangleStripDrawMode)
+const segmentsGeometry = getGeometry(segments)
+const arcGeometry = getGeometry(arc)
+
 // vertex shader & fragment shader, wrapped in RawShaderMaterial
 const vertShaderStr = `precision mediump float;
 precision mediump int;
@@ -62,10 +65,11 @@ const material = new THREE.RawShaderMaterial({
 })
 
 // object and scene
-const mesh = new THREE.Mesh(geometry, material)
-// mesh.setDrawMode(THREE.TriangleStripDrawMode)
 const scene = new THREE.Scene();
-scene.add(mesh);
+const segmentsMesh = new THREE.Mesh(segmentsGeometry, material)
+const arcMesh = new THREE.Mesh(arcGeometry, material)
+scene.add(segmentsMesh);
+scene.add(arcMesh);
 
 // camera
 // perspective for general 3D scene
